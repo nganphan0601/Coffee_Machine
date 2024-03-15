@@ -31,11 +31,10 @@ resources = {
 }
 
 def report_show(money):
-    ingredient = list(resources.keys())
     print(f'''
-                {ingredient[0]}: {resources[0]}ml \n
-                {ingredient[1]}: {resources[1]}ml \n
-                {ingredient[2]}: {resources[2]}g \n
+                Water: {resources["water"]}ml \n
+                Milk: {resources["milk"]}ml \n
+                Coffee: {resources["coffee"]}g \n
                 Money: ${money}
                 ''')
         
@@ -55,15 +54,23 @@ def process_coins(q, d, n, p):
 
     return quarters * q + dimes * d + nickles * n + pennies * p
 
+def make_coffee(coffee):
+    for key in coffee:
+        resources[key] -= coffee[key]
+
+    return
 
 money = 0
+available_drink = list(MENU.keys())
 
 # The prompt should be on repeat to serve the next customer
 while True:
     print("Welcome to the Daily Coffee")
-    print("What would you like today ? ☕ We have espresso/latte/cappuchino")
+    print("What would you like today ? ☕ We have espresso/latte/cappuccino")
     #Check the user's input
+  
     order = input("I'd like: ")
+    
 
     #'off' is a secret keyword for maintainers
     if order == "off":
@@ -73,11 +80,21 @@ while True:
     elif order == "report":
         report_show(money)
     else:
+        if order not in available_drink:
+            print("Sorry we don't have it in the menu")
+            continue
         drink = MENU[order]
         if is_resources_sufficient(drink["ingredients"]):
             quarters = float(input("Quarters: "))
             dimes = float(input("Dimes: "))
             nickles = float(input("Nickles: "))
             pennies = float(input("Pennies: "))
-            process_coins(quarters, dimes, nickles, pennies)
-    
+            payment = process_coins(quarters, dimes, nickles, pennies)
+            if payment < drink["cost"]:
+                print("Sorry that is not enough money 🫤. Money refunded")
+                continue
+            else:
+                change =  payment - drink["cost"]
+                money += payment
+                make_coffee(drink["ingredients"])
+                print(f"☕ Here's your {order} and ${round(change,2)} in change. Enjoy! ")
